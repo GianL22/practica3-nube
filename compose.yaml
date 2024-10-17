@@ -4,7 +4,7 @@ services:
   db:
     restart: always
     container_name: directory-app-DB
-    image: 95b
+    image: mongo:latest
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: root
