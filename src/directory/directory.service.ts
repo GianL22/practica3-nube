@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { CreateDirectoryDTO } from './dto/create-directory.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Directory } from './schemas/directory.schema';
 import { isValidObjectId, Model } from 'mongoose';
+import { CreateDirectoryDTO } from './dto/create-directory.dto';
+import { Directory } from './models/directory.model';
 import { UpdateDirectoryDto } from './dto/update-directory.dto';
 
 @Injectable()
@@ -57,8 +57,4 @@ export class DirectoryService {
     console.log(error);
     throw new InternalServerErrorException(`Can't create Directory - Check server logs`)
   }
-  
-  // create() {
-  //   return 0;
-  // }
 }

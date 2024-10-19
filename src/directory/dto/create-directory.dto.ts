@@ -1,10 +1,9 @@
-import { IsUUID, IsString, MinLength, minLength, IsEmail, IsArray } from "class-validator";
+import { IsString, MinLength, IsEmail } from "class-validator";
 
 export class CreateDirectoryDTO {
-    @IsUUID()
-    id: string;
     @IsString()
+    @MinLength(4)
     name: string;
-    @IsArray()
+    @IsEmail({}, {each : true})
     emails: string[];
 }

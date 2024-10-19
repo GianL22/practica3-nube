@@ -2,8 +2,7 @@ import { Module } from '@nestjs/common';
 import { DirectoryController } from './directory.controller';
 import { DirectoryService } from './directory.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ConfigModule } from '@nestjs/config';
-import { Directory, DirectorySchema } from './schemas/directory.schema';
+import { Directory, DirectorySchema } from './models/directory.model';
 @Module({
   controllers: [DirectoryController],
   providers: [DirectoryService],

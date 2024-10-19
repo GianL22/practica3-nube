@@ -1,21 +1,17 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { DirectoryController } from './directory/directory.controller';
-import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { AppController } from './app.controller';
 import { DirectoryModule } from './directory/directory.module';
-import { DirectoryService } from './directory/directory.service';
-import { Directory } from './directory/schemas/directory.schema';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    MongooseModule.forRoot(process.env.MONGO_URL),
+    MongooseModule.forRoot(process.env.MONGO_CNN),
     DirectoryModule
   ], 
-  controllers: [AppController, DirectoryController],
-  providers: [DirectoryService],
+  controllers: [AppController],
 })
 export class AppModule {}

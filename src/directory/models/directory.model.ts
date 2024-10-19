@@ -1,14 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { SchemaTypes } from 'mongoose';
 
-@Schema({ collection: 'directories' })
+@Schema({ collection: 'directories', versionKey : false })
 export class Directory {
-  @Prop({
-    type: SchemaTypes.UUID,
-    unique: true,
-    required: true,
-  })
-  id: string;
   @Prop({
     required: true,
     minlength: 4,

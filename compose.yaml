@@ -2,11 +2,13 @@ version: '3.9'
 
 services:
   db:
-    restart: always
     container_name: directory-app-DB
-    image: mongo:latest
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root
+    image: mongo:8.0.1
     ports:
       - '27018:27017'
+    volumes:
+      - nube-vol:/data/db
+    restart: always
+volumes:
+  nube-vol:
+    external: false
