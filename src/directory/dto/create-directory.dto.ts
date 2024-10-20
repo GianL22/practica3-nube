@@ -4,6 +4,7 @@ export class CreateDirectoryDTO {
     @IsString()
     @MinLength(4)
     name: string;
+    
     @IsEmail({}, {each : true})
     emails: string[];
 }
