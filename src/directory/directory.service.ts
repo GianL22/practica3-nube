@@ -15,42 +15,24 @@ export class DirectoryService {
     @InjectModel(Directory.name)
     private readonly directoryModel: Model<Directory>
   ){}
-  
-  private async getNextId(): Promise<number> {
-    const lastDocument = await this.directoryModel
-      .findOne()
-      .sort({ id: -1 })
-      .limit(1);
-    return (!lastDocument) ? 1 : (lastDocument.id + 1);
-  }
 
   async create(createDirectoryDto: CreateDirectoryDTO) {
-    try {
-      const id = await this.getNextId(); 
-      const directory = await this.directoryModel.create(
-        {
-          ...createDirectoryDto,
-          id: id
-        }
-    );
-      return {
-        id,
-        ...createDirectoryDto
-      };
+    try { 
+      const directory = await this.directoryModel.create(createDirectoryDto)
+      return directory
     } catch (error){
       this.handleExceptions(error);
     }
   }
 
-  async findOne(term: number) {
+  async findOne(term: string) {
     let directory: Directory;
-    if(isNaN(+term) && isValidObjectId(term)){
+    if(isValidObjectId(term)){
       directory = await this.directoryModel.findById(term);
     }
     if(!directory){
       directory = await this.directoryModel
         .findOne({id: term})
-        .select('-_id');
     }
     if(!directory) 
       throw new NotFoundException(`directory with id or name "${term}" not found`);
@@ -58,31 +40,27 @@ export class DirectoryService {
     return directory;
   }
 
-  async update(term: number, updateDirectoryDto: UpdateDirectoryDto) {
+  async update(term: string, updateDirectoryDto: UpdateDirectoryDto) {
     return this.partialUpdate(term, updateDirectoryDto);
   }
 
-  async partialUpdate(term: number, partialUpdateDirectoryDto: PartialUpdateDirectoryDto) {
+  async partialUpdate(term: string, partialUpdateDirectoryDto: PartialUpdateDirectoryDto) {
     try {
-      const directoryDB = await this.directoryModel
-        .findOneAndUpdate({id: term},partialUpdateDirectoryDto, {new: true})
-      if (!directoryDB) {
-        throw new NotFoundException(`Directory with ID "${term}" not found`);
-      }
-      const {_id, ...response} = directoryDB.toObject();
+      const directory = await this.findOne(term);
+      await directory.updateOne(partialUpdateDirectoryDto, {new: true});
       return {
-        ...response,
+        ...directory.toJSON(),
         ...partialUpdateDirectoryDto
-      } 
+      }
     } catch (error) {
       this.handleExceptions(error);
     }
   }
   
-  async deleteOne(term: number) {
+  async deleteOne(term: string) {
     const id = term;
     const directory = await this.findOne(term);
-    await this.directoryModel.deleteOne({id: term});
+    await directory.deleteOne();
     return id;
   }
 
@@ -93,7 +71,6 @@ export class DirectoryService {
   async getAll({limit = 5, offset = 0}: PaginationDTO) {  
 
     const directory = await this.directoryModel.find()
-      .select('-_id')
       .limit(limit)
       .skip(offset);
     

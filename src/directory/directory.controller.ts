@@ -28,17 +28,17 @@ export class DirectoryController {
   }
 
   @Put(':term')
-  update(@Param('term', ParseIntPipe) term: number, @Body() updateDirectoryDto: UpdateDirectoryDto) {
+  update(@Param('term') term: string, @Body() updateDirectoryDto: UpdateDirectoryDto) {
     return this.directoryService.update(term, updateDirectoryDto);
   }
 
   @Patch(':term')
-  updatePartial(@Param('term', ParseIntPipe) term: number, @Body() partialUpdateDirectoryDto: PartialUpdateDirectoryDto) {
+  updatePartial(@Param('term') term: string, @Body() partialUpdateDirectoryDto: PartialUpdateDirectoryDto) {
     return this.directoryService.partialUpdate(term, partialUpdateDirectoryDto);
   }
 
   @Get(':term')
-  findOne(@Param('term', ParseIntPipe) term: number) {;
+  findOne(@Param('term') term: string) {;
     return this.directoryService.findOne(term);
   }
 
@@ -48,7 +48,7 @@ export class DirectoryController {
   }
 
   @Delete(':term')
-  removeOne(@Param('term', ParseIntPipe) term: number) {
+  removeOne(@Param('term') term: string) {
     return this.directoryService.deleteOne(term);
   }
 
