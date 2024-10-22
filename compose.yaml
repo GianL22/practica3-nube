@@ -3,15 +3,21 @@ version: '3.9'
 services:
   mongo:
     image: mongo:8.0.1
-    ports:
-      - 27017:27017
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
     restart: always
     volumes:
       - nube-vol:/data/db
-
+    networks:
+      - nube-net
+    healthcheck:
+      test: echo 'db.runCommand({find:"app_db_name.devUser"}).ok' | mongosh --authenticationDatabase admin --host localhost -u ${MONGO_ROOT_USERNAME} -p ${MONGO_ROOT_PASSWORD} admin --quiet | grep -q 1
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+      
   mongo-express:
     image: mongo-express
     ports:
@@ -22,21 +28,31 @@ services:
       ME_CONFIG_MONGODB_URL: ${MONGO_CNN}
       ME_CONFIG_BASICAUTH: false
     restart: always
+    networks:
+      - nube-net
     
   nestapp:
-    depends_on:
-      - mongo
     build:
       context: .
     image: directory-nest
     container_name: nest-app-db
     restart: always
+    networks:
+      - nube-net
     ports:
       - "${PORT}:${PORT}"
     environment:
       PORT: ${PORT}
       MONGO_CNN: ${MONGO_CNN}
+    depends_on:
+        mongo:
+          condition: service_healthy
+          restart: true
 
 volumes:
   nube-vol:
     external: false
+
+networks:
+  nube-net:
+
