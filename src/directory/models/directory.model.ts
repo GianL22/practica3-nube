@@ -6,6 +6,7 @@ import { routes } from 'src/config/routes.config';
 export class Directory extends Document {
   @Prop({
     type: 'Number',
+    unique: true,
   })
   id: number
   
