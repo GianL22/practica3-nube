@@ -1,7 +1,11 @@
 node_modules
 .git
 .gitignore
+example.env
+.prettierrc
+README.md
 *.md
 dist
 Dockerfile
 docker-compose.yml
+.eslintrc.js
