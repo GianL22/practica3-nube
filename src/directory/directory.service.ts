@@ -64,7 +64,10 @@ export class DirectoryService {
   }
 
   async update(term: number, updateDirectoryDto: UpdateDirectoryDto) {
-    return this.partialUpdate(term, updateDirectoryDto);
+    const {id, ...directory} = updateDirectoryDto;
+    if(term != id)
+        throw new BadRequestException(`Directory with ${id} does not match the ID (${term}) of the directory to be updated`);
+    return this.partialUpdate(term, directory);
   }
 
   async partialUpdate(
