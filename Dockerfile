@@ -1,17 +1,12 @@
-FROM node:18-alpine
-
-RUN mkdir -p /app
-
-WORKDIR /app
-
-COPY package*.json /app
-
-RUN npm install
-
+FROM node:20-alpine as base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 COPY . /app
+WORKDIR /app
+RUN ls
 
-RUN ["npm", "run",  "build"]
-
-EXPOSE 3000
-
-CMD [ "npm", "start" ]
+FROM base AS prod-deps
+RUN pnpm install
+RUN pnpm run build
+CMD ["pnpm", "start"]

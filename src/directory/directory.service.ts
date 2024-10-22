@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { isValidObjectId, Model } from 'mongoose';
 import { CreateDirectoryDTO } from './dto/create-directory.dto';
@@ -10,50 +15,50 @@ import { routes } from 'src/config/routes.config';
 
 @Injectable()
 export class DirectoryService {
-
   constructor(
     @InjectModel(Directory.name)
-    private readonly directoryModel: Model<Directory>
-  ){}
-  
+    private readonly directoryModel: Model<Directory>,
+  ) {}
+
   private async getNextId(): Promise<number> {
     const lastDocument = await this.directoryModel
       .findOne()
       .sort({ id: -1 })
       .limit(1);
-    return (!lastDocument) ? 1 : (lastDocument.id + 1);
+    return !lastDocument ? 1 : lastDocument.id + 1;
   }
 
   async create(createDirectoryDto: CreateDirectoryDTO) {
     try {
-      const id = await this.getNextId(); 
-      const directory = await this.directoryModel.create(
-        {
-          ...createDirectoryDto,
-          id: id
-        }
-    );
+      const id = await this.getNextId();
+      const directory = await this.directoryModel.create({
+        ...createDirectoryDto,
+        id: id,
+      });
       return {
         id,
-        ...createDirectoryDto
+        ...createDirectoryDto,
       };
-    } catch (error){
+    } catch (error) {
       this.handleExceptions(error);
     }
   }
 
   async findOne(term: number) {
     let directory: Directory;
-    if(isNaN(+term) && isValidObjectId(term)){
+    if (isNaN(+term) && isValidObjectId(term)) {
+      console.log(term);
       directory = await this.directoryModel.findById(term);
     }
-    if(!directory){
+    if (!directory) {
       directory = await this.directoryModel
-        .findOne({id: term})
+        .findOne({ id: term })
         .select('-_id');
     }
-    if(!directory) 
-      throw new NotFoundException(`directory with id or name "${term}" not found`);
+    if (!directory)
+      throw new NotFoundException(
+        `directory with id or name "${term}" not found`,
+      );
 
     return directory;
   }
@@ -62,42 +67,44 @@ export class DirectoryService {
     return this.partialUpdate(term, updateDirectoryDto);
   }
 
-  async partialUpdate(term: number, partialUpdateDirectoryDto: PartialUpdateDirectoryDto) {
+  async partialUpdate(
+    term: number,
+    partialUpdateDirectoryDto: PartialUpdateDirectoryDto,
+  ) {
     try {
-      const directoryDB = await this.directoryModel
-        .findOneAndUpdate({id: term},partialUpdateDirectoryDto, {new: true})
+      const directoryDB = await this.directoryModel.findOneAndUpdate(
+        { id: term },
+        partialUpdateDirectoryDto,
+        { new: true },
+      );
       if (!directoryDB) {
         throw new NotFoundException(`Directory with ID "${term}" not found`);
       }
-      const {_id, ...response} = directoryDB.toObject();
+      const { _id, ...response } = directoryDB.toObject();
       return {
         ...response,
-        ...partialUpdateDirectoryDto
-      } 
+        ...partialUpdateDirectoryDto,
+      };
     } catch (error) {
       this.handleExceptions(error);
     }
   }
-  
+
   async deleteOne(term: number) {
     const id = term;
-    const directory = await this.findOne(term);
-    await this.directoryModel.deleteOne({id: term});
+    await this.findOne(term);
+    await this.directoryModel.deleteOne({ id: term });
     return id;
   }
 
-  async delete() {
-    return await this.directoryModel.deleteMany();
-  }
-
-  async getAll({limit = 5, offset = 0}: PaginationDTO) {  
-
-    const directory = await this.directoryModel.find()
+  async getAll({ limit = 5, offset = 0 }: PaginationDTO) {
+    const directory = await this.directoryModel
+      .find()
       .select('-_id')
       .limit(limit)
       .skip(offset);
-    
-    const totalCount = await this.directoryModel.countDocuments()
+
+    const totalCount = await this.directoryModel.countDocuments();
     const currentPage = Math.floor(offset / limit) + 1;
     const totalPages = Math.ceil(totalCount / limit);
 
@@ -105,23 +112,29 @@ export class DirectoryService {
     const baseUri = `${APP_HOST}:${PORT}/${routes.DIRECTORIES}`;
 
     return {
-      count: directory.length,
-      next: (offset + limit >= totalCount ) 
-        ? null 
-        : `${baseUri}/?limit=${limit}&offset=${offset + limit}`,
-      previous: (offset <= 0) 
-        ? null 
-        : `${baseUri}/?limit=${limit}&offset=${Math.max(offset - limit, 0)}`,
-      results: directory
-    }
+      count: totalCount,
+      next:
+        offset + limit >= totalCount
+          ? null
+          : `${baseUri}/?limit=${limit}&offset=${offset + limit}`,
+      previous:
+        offset <= 0
+          ? null
+          : `${baseUri}/?limit=${limit}&offset=${Math.max(offset - limit, 0)}`,
+      results: directory,
+    };
   }
 
-
-  private handleExceptions(error: any){
-    if(error.code === 11000){   // error de dato duplicado
-      throw new BadRequestException(`Directory already exists in db ${JSON.stringify(error.keyValue)}`)
+  private handleExceptions(error: any) {
+    if (error.code === 11000) {
+      // error de dato duplicado
+      throw new BadRequestException(
+        `Directory already exists in db ${JSON.stringify(error.keyValue)}`,
+      );
     }
     console.log(error);
-    throw new InternalServerErrorException(`Can't create Directory - Check server logs`)
+    throw new InternalServerErrorException(
+      `Can't create Directory - Check server logs`,
+    );
   }
 }

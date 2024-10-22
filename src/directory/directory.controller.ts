@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Delete,
-  NotImplementedException,
   Patch,
   Post,
   Param,
@@ -21,24 +20,31 @@ import { PartialUpdateDirectoryDto } from './dto/partial-update-directory.dto';
 @Controller(routes.DIRECTORIES)
 export class DirectoryController {
   constructor(private readonly directoryService: DirectoryService) {}
-  
+
   @Post()
   create(@Body() createDirectoryDto: CreateDirectoryDTO) {
-    return this.directoryService.create(createDirectoryDto)
+    return this.directoryService.create(createDirectoryDto);
   }
 
   @Put(':term')
-  update(@Param('term', ParseIntPipe) term: number, @Body() updateDirectoryDto: UpdateDirectoryDto) {
+  update(
+    @Param('term', ParseIntPipe) term: number,
+    @Body() updateDirectoryDto: UpdateDirectoryDto,
+  ) {
     return this.directoryService.update(term, updateDirectoryDto);
   }
 
   @Patch(':term')
-  updatePartial(@Param('term', ParseIntPipe) term: number, @Body() partialUpdateDirectoryDto: PartialUpdateDirectoryDto) {
+  updatePartial(
+    @Param('term', ParseIntPipe) term: number,
+    @Body() partialUpdateDirectoryDto: PartialUpdateDirectoryDto,
+  ) {
     return this.directoryService.partialUpdate(term, partialUpdateDirectoryDto);
   }
 
+
   @Get(':term')
-  findOne(@Param('term', ParseIntPipe) term: number) {;
+  findOne(@Param('term', ParseIntPipe) term: number) {
     return this.directoryService.findOne(term);
   }
 
@@ -51,10 +57,4 @@ export class DirectoryController {
   removeOne(@Param('term', ParseIntPipe) term: number) {
     return this.directoryService.deleteOne(term);
   }
-
-  @Delete()
-  remove() {
-    return this.directoryService.delete();
-  }
-  
 }
