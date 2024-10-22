@@ -12,7 +12,15 @@ services:
     networks:
       - nube-net
     healthcheck:
-      test: echo 'db.runCommand({find:"app_db_name.devUser"}).ok' | mongosh --authenticationDatabase admin --host localhost -u ${MONGO_ROOT_USERNAME} -p ${MONGO_ROOT_PASSWORD} admin --quiet | grep -q 1
+      test:
+        [
+          "CMD",
+          "mongosh",
+          "--quiet",
+          "127.0.0.1/test",
+          "--eval",
+          "'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'",
+        ]
       interval: 10s
       timeout: 10s
       retries: 5
