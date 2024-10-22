@@ -1,4 +1,4 @@
-import { IsString, MinLength, IsEmail, IsPositive, Min, IsNumber, IsOptional, IsInt } from "class-validator";
+import { IsPositive, Min, IsNumber, IsOptional, IsInt } from "class-validator";
 
 export class PaginationDTO {
     @IsNumber()
