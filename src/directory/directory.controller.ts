@@ -16,7 +16,9 @@ import { UpdateDirectoryDto } from './dto/update-directory.dto';
 import { PaginationDTO } from './dto/pagination.dto';
 import { routes } from 'src/config/routes.config';
 import { PartialUpdateDirectoryDto } from './dto/partial-update-directory.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags(routes.DIRECTORIES)
 @Controller(routes.DIRECTORIES)
 export class DirectoryController {
   constructor(private readonly directoryService: DirectoryService) {}
