@@ -29,7 +29,7 @@ services:
   mongo-express:
     image: mongo-express
     ports:
-      - 8081:8081
+      - ${MONGO_EXPRESS_PORT}:8081
     environment:
       ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_ROOT_USERNAME}
       ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_ROOT_PASSWORD}
@@ -38,10 +38,9 @@ services:
     restart: always
     networks:
       - nube-net
+    
   nestapp:
-    build:
-      context: .
-    image: directory-nest
+    image: sspa2/directory-nest:1.0.0
     container_name: nest-app-db
     restart: always
     networks:
@@ -51,15 +50,17 @@ services:
     environment:
       PORT: ${PORT}
       MONGO_CNN: ${MONGO_CNN}
-    depends_on:
-        mongo:
-          condition: service_healthy
-          restart: true
+      APP_HOST: ${APP_HOST}
 
 volumes:
   nube-vol:
+    # drive: local
+    # driver-opts: 
+    #   type: "nfs"
+    #   o: "addr=nfs01.rw"
+    #   device: ":/data/docker-vols/grupo9/nube-vol"
     external: false
 
 networks:
   nube-net:
-
+    driver: overlay
