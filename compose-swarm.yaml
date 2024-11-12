@@ -4,13 +4,15 @@ services:
   mongo:
     image: mongo:4.4-focal
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_ROOT_USERNAME: strider
+      MONGO_INITDB_ROOT_PASSWORD: 123456789
     restart: always
     volumes:
-      - nube-vol:/data/db
+      - nube-data:/data/db
     networks:
       - nube-net
+    ports:
+      - "27017:27017"
     healthcheck:
       test:
         [
@@ -25,41 +27,29 @@ services:
       timeout: 10s
       retries: 5
       start_period: 40s
-      
-  mongo-express:
-    image: mongo-express
-    ports:
-      - ${MONGO_EXPRESS_PORT}:8081
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_ROOT_USERNAME}
-      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_ROOT_PASSWORD}
-      ME_CONFIG_MONGODB_URL: ${MONGO_CNN}
-      ME_CONFIG_BASICAUTH: false
-    restart: always
-    networks:
-      - nube-net
     
   nestapp:
-    image: sspa2/directory-nest:1.0.0
+    image: sspa2/directory-nest
     container_name: nest-app-db
     restart: always
     networks:
       - nube-net
+    env_file:
+      - .env
     ports:
-      - "${PORT}:${PORT}"
+      - "9014:9014"
     environment:
-      PORT: ${PORT}
-      MONGO_CNN: ${MONGO_CNN}
-      APP_HOST: ${APP_HOST}
+      PORT: 9014
+      MONGO_CNN: mongodb://strider:123456789@mongo:27017/
+      APP_HOST: grupo5.lab
 
 volumes:
-  nube-vol:
-    # drive: local
-    # driver-opts: 
-    #   type: "nfs"
-    #   o: "addr=nfs01.rw"
-    #   device: ":/data/docker-vols/grupo9/nube-vol"
-    external: false
+  nube-data:
+    driver: local
+    driver_opts:
+      type: "nfs"
+      o: "addr=nfs01,rw"
+      device: ":/data/docker-vols/grupo5/nube-data"
 
 networks:
   nube-net:
