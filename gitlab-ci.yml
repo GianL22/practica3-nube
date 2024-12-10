@@ -1,0 +1,57 @@
+stages:
+  - build
+  - deploy
+
+
+image-build:
+  stage: build
+  only:
+    refs:
+      - main
+  image: registry.okd.ucab.edu.ve/images/docker:23
+  services:
+    - name: registry.okd.ucab.edu.ve/images/docker:23-dind
+      alias: docker
+  variables:
+    DOCKER_HOST: "tcp://docker:2376"
+  script:
+    - cat "$OKD_SA_TOKEN" | docker login -u openshift --password-stdin registry.okd.ucab.edu.ve
+    - docker build -t registry.okd.ucab.edu.ve/glanza-21/directories-ws:$CI_COMMIT_SHORT_SHA ./
+    - docker push registry.okd.ucab.edu.ve/glanza-21/directories-ws:$CI_COMMIT_SHORT_SHA
+
+
+okd-deploy:
+  image: registry.okd.ucab.edu.ve/images/okd-cli:3.11
+  stage: deploy
+  only:
+    refs:
+      - main
+  script:
+    - oc login https://okd-cluster.ucab.edu.ve:8443/ --token="$(cat $OKD_SA_TOKEN)"
+    - oc project glanza-21
+    - cp $OKD_PARAM_FILE ./param-file
+    - echo "IMAGE_NAME=directories-ws:$CI_COMMIT_SHORT_SHA" >> ./param-file
+    - oc process -f okd-template.yml --param-file=./param-file | oc apply -f -
+    - sleep 15
+    - oc wait "dc/$APP_NAME-mng" --for condition=available --timeout=300s
+    - oc wait "dc/$APP_NAME-appserver" --for condition=available --timeout=300s
+  environment:
+    name: $CI_COMMIT_REF_NAME
+    on_stop: okd-stop-deploy
+
+
+okd-stop-deploy:
+  image: registry.okd.ucab.edu.ve/images/okd-cli:3.11
+  stage: deploy
+  only:
+    refs:
+      - main
+  script:
+    - oc login https://okd-cluster.ucab.edu.ve:8443/ --token="$(cat $OKD_SA_TOKEN)"
+    - oc project glanza-21
+    - oc delete all --selector app="${APP_NAME}"
+    - oc delete secret --selector app="${APP_NAME}"
+  environment:
+    name: $CI_COMMIT_REF_NAME
+    action: stop
+  when: manual
