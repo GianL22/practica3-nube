@@ -38,6 +38,7 @@ services:
     restart: always
     networks:
       - nube-net
+      
   nestapp:
     build:
       context: .
